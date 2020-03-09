@@ -1,0 +1,16 @@
+---
+- name: restart bind on OS
+  service:
+    name: bind9
+    state: restarted
+    enabled: yes
+  listen: restart bind
+  when: not e_use_docker_compose | bool
+
+- name: restart docker_compose bind
+  docker_compose:
+    project_src: "{{docker_compose_bind_folder_path}}"
+    state: present
+    restarted: yes
+  listen: restart bind
+  when: e_use_docker_compose | bool

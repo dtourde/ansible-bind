@@ -1,0 +1,24 @@
+#jinja2: lstrip_blocks: "True", trim_blocks: "True"
+{# item should be bind_xxx_zones.zone #}
+{# include a $ORIGIN block ? #}
+{% block header %}
+$TTL    3600
+@       IN      SOA     {{item.dns_fqdn}} {{item.soa_email}} (
+                   {{item.soa_parameters.serial}}           ; Serial
+                         {{item.soa_parameters.refresh}}           ; Refresh [1h]
+                          {{item.soa_parameters.retry}}           ; Retry   [10m]
+                        {{item.soa_parameters.expire}}           ; Expire  [1d]
+                          {{item.soa_parameters.neg_cache_ttl}} )         ; Negative Cache TTL [1h]
+;
+{% endblock %}
+@       IN      NS      sid.example.com.
+@       IN      MX      10 sid.example.com.
+
+{% block records %}
+{% for key, type_record in item.records.items() %}
+  {% for record in type_record %}
+{{ '{:8}{:8}{:8}{:16}'.format(record.name, record.inet_class, key, record.record) }}
+  {% endfor %}
+
+{% endfor %}
+{% endblock %}

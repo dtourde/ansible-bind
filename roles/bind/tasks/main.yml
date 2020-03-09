@@ -1,0 +1,82 @@
+---
+- name: Include docker_compose vars file
+  include_vars: vars/docker_compose.yml
+  tags: always
+  when: e_use_docker_compose | bool
+
+- name: Include vars files, see README.md for full list
+  include_vars: "{{item}}"
+  tags: always
+  loop:
+    - "vars/{{e_bind_vars_file}}"
+    - "vars/secret_vars.yml"
+
+- name: Get public IP
+  ipify_facts:
+  tags: always
+  register: public_ip
+
+- name: include install task
+  include_tasks: "tasks/install-{{ansible_os_family}}.yml"
+  when: not e_use_docker_compose | bool
+
+- name: include docker install task
+  include_tasks: "tasks/install-{{ansible_os_family}}-docker.yml"
+  when: e_use_docker_compose | bool
+
+- name: Directories exist
+  file:
+    path: "{{item}}"
+    state: directory
+    mode: 0750
+  with_items:
+    - "{{remote_bind_data_folder}}"
+    - "{{remote_bind_cache_folder}}"
+    - "{{remote_bind_data_folder}}/conf.d"
+
+- name: Push bind default config
+  copy:
+    src: "{{local_bind_etc_folder}}"
+    dest: "{{remote_bind_etc_folder}}"
+    owner: root
+    group: bind
+    mode: 0640
+  notify: restart bind
+  tags:
+    copy
+
+- name: Copy key file and set it as not world-readable
+  copy:
+    src: "{{local_bind_key_file_path}}"
+    dest: "{{remote_bind_data_folder}}"
+    mode: 0440
+    owner: root
+    group: bind
+  when: local_bind_key_file_path and local_bind_key_file_path|length and remote_bind_key_file_path and remote_bind_key_file_path|length
+
+- name: Templating configuration files
+  template:
+    src: "{{item.src}}"
+    dest: "{{item.dest}}"
+    mode: 0640
+  loop:
+    - { src: 'named.conf.j2', dest: '{{remote_bind_etc_folder}}/named.conf' }
+    - { src: 'named.conf.default-zones.j2', dest: '{{remote_bind_etc_folder}}/named.conf.default-zones' }
+    - { src: 'named.conf.options.j2', dest: '{{remote_bind_etc_folder}}/named.conf.options' }
+    - { src: 'named.conf.local.j2', dest: '{{remote_bind_etc_folder}}/named.conf.local' }
+    - { src: 'zones.j2', dest: '{{remote_bind_etc_folder}}/conf.d/' }
+  tags:
+    - templating_dbg_1
+  notify: restart bind
+
+- name: Templating db files
+  template:
+    src: db.base.j2
+    dest: "{{remote_bind_db_folder}}/db.{{item.name}}"
+  loop:
+    "{{ zones|flatten(levels=1) }}"
+  tags:
+    - templating_dbg_2
+  notify: restart bind
+
+# - name: reload nameserver

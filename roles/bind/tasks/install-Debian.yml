@@ -1,0 +1,5 @@
+---
+- name: install bind9
+  package:
+    name: bind9
+    state: present

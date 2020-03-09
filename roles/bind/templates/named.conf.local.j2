@@ -1,0 +1,33 @@
+//
+// Do any local configuration here
+//
+
+// Consider adding the 1918 zones here, if they are not used in your
+// organization
+//include "/etc/bind/zones.rfc1918";
+
+// Include all configured zones
+include "{{remote_bind_etc_folder}}/conf.d/zones"
+
+// Gérer les fichiers de logs
+include "/etc/bind/named.conf.log";
+
+// Gestion du domaine example.com
+// ------------------------------
+//  - Le serveur est défini comme maître sur ce domaine
+//  - Il n'y a aucun forwarder pour ce domaine car nous avons la main mise dessus.
+//    Pour tous les autres domaines, nous utiliserons le forwarder mentionné dans *named.conf.options*
+//  - Les entrees sur le domaine peuvent être ajoutées dynamiquement avec le clef ns-example-com_rndc-key
+{# --- OLD VERSION, WILL BE REMOVED ---
+{% for zone in zones %}
+zone "{{zone.name}}"
+        type {{zone.type}};
+        file "{{bind_ext_db_folder}}/{{zone.db_name}}";
+        forwarders {};
+        allow-update { key {{zone.key|default(bind_ext_key_file, True) }} };
+};
+{% endfor %}
+#}
+// Consider adding the 1918 zones here, if they are not used in your
+// organization
+include "/etc/bind/zones.rfc1918";

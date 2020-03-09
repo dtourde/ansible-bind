@@ -1,0 +1,45 @@
+#jinja2: lstrip_blocks: "True", trim_blocks: "True"
+// This is the primary configuration file for the BIND DNS server named.
+//
+// Please read /usr/share/doc/bind9/README.Debian.gz for information on the 
+// structure of BIND configuration files in Debian, *BEFORE* you customize 
+// this configuration file.
+//
+// If you are just adding zones, please do that in /etc/bind/named.conf.local
+// Charger les options
+
+include "/etc/bind/named.conf.options";
+include "/etc/bind/named.conf.local";
+include "/etc/bind/named.conf.default-zones";
+
+
+{% if domains_acl %}
+// Gérer les acls
+acl internals { 127.0.0.0/8; 192.168.0.0/24; };
+  {% for acl in domains_acl %}
+acl {{acl.name}} {
+    {% for ip in acl.ipv4 %}
+        {{ip}};
+    {% endfor %}
+  {% endfor %}
+}
+{% endif %}
+
+{% if local_bind_key_file_path and local_bind_key_file_path|length and remote_bind_key_file_path and remote_bind_key_file_path|length %}
+// Déclaration de la clef TSIG utilisée pour la mise à jour dynamique
+include "{{local_bind_key_file_path}}";
+{% endif %}
+
+// Configurer le canal de communication pour administrer BIND9 avec rndc
+// Par défaut, la clef est située dans le fichier rndc.key et utilisée par
+// rndc et bind9 sur localhost
+controls {
+        inet 127.0.0.1 port 953 allow { 127.0.0.1; };
+};
+
+// prime the server with knowledge of the root servers
+zone "." {
+        type hint;
+        file "/etc/bind/db.root";
+};
+

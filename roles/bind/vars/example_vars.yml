@@ -1,0 +1,146 @@
+---
+  ## REMOTE PATHS ##
+  remote_bind_base_folder_path: /mnt/datastore0/it_services/bind
+  remote_bind_data_folder: '{{ (remote_bind_base_folder_path, "bind_ext") | join("/") }}' #base dir
+  
+  remote_bind_etc_folder: '{{remote_bind_data_folder ~ "/etc/bind"}}' # Easier to read version, need to modify others
+  
+  remote_bind_cache_folder: '{{ (remote_bind_base_folder_path, "cache_heisenberg_ext") | join("/") }}'
+  
+  remote_bind_key_file_path: '{{remote_bind_etc_folder ~ "/my-key.key"}}' # a corriger
+  
+  remote_bind_db_folder: '{{remote_bind_etc_folder ~ "/conf.d" }}'
+  
+  # Testing docker compose file in /tmp dir because should be on with ansible only #
+  docker_compose_bind_folder_path: /opt/docker-compose/bind/bind_ext
+  
+  ## LOCAL PATHS ##
+  local_bind_base_folder_path: roles/bind/files
+  local_bind_data_folder: '{{ (local_bind_base_folder_path, "bind_ext") | join("/") }}'
+  local_bind_etc_folder: '{{ (local_bind_base_folder_path, "etc") | join("/") }}'
+  
+  local_bind_key_file_path:
+  
+  # local_bind_int_data_folder: '{{ (local_bind_base_folder_path, "bind_int") | join("/") }}'
+  
+  ## NETWORKING ##
+  bind_container_ip_addr: 1.2.3.4
+  
+  bind_ext_ipv4_listen:
+    - 127.0.0.1
+    - "{{bind_container_ip_addr}}"
+  public_ip_addr: "{{ipify_public_ip}}"
+  
+  ## BIND CONF VARS ##
+  domain_name_1: example.org
+  rev_domain_name_1: 
+  dns_fqdn_1: "ns1.{{domain_name_1}}"
+  
+  domain_name_2: second-example.org
+  rev_domain_name_2: 
+  dns_fqdn_2: "ns1.{{domain_name_2}}"
+  
+  
+  # This is useless as my container is cooked by entrypoint.sh - TO BE REMOVED
+  inside_container_bind_base_folder_path: /data/bind
+  inside_container_bind_etc_folder_path: '{{ (inside_container_bind_base_folder_path, "etc") | join("/") }}'
+  inside_container_bind_lib_folder_path: '{{ (inside_container_bind_base_folder_path, "lib") | join("/") }}'
+  ###
+  
+  domains_acl:
+    - name: gandi-net
+      ipv4:
+        - 217.70.176.0/20
+  
+  forwarders:
+    - "{{ip_router}}"
+  
+  
+  zones:
+    - name: "{{domain_name_1}}"
+      dns_fqdn: "ns1.{{domain_name_1}}."
+      soa_email: damien.tourde.example.
+      allow_transfer:
+        - gandi-net
+      soa_parameters:
+        serial: "{{ansible_date_time.year~ansible_date_time.month~\
+                ansible_date_time.day}}{{e_serial_count|default('01')}}"
+        refresh: 3600
+        retry: 600
+        expire: 86400
+        neg_cache_ttl: 600
+      type: master
+      reverse: False
+      db_name: "db.{{domain_name_1}}"
+      # key: "{{domain_name_1}}.key"
+      records:
+        NS:
+          - name: "@"
+            inet_class: IN
+            record: "ns1.{{domain_name_1}}"
+        MX:
+          - name: "@"
+            inet_class: IN
+            record: "10 mail.{{domain_name_1}}"
+        A:
+          - name: ""
+            inet_class: IN
+            record: "{{public_ip_addr}}"
+        CNAME:
+          - name: plex
+            inet_class: IN
+            record: "@"
+          - name: netdata
+            inet_class: IN
+            record: "@"
+          - name: www
+            inet_class: IN
+            record: ""
+    - name: "{{domain_name_2}}"
+      dns_fqdn: "ns1.{{domain_name_2}}."
+      soa_email: damien.tourde.second-example.
+      allow_transfer:
+        - gandi-net
+      soa_parameters:
+        serial: "{{ansible_date_time.year~ansible_date_time.month~\
+                ansible_date_time.day}}{{e_serial_count|default('01')}}"
+        refresh: 3600
+        retry: 600
+        expire: 86400
+        neg_cache_ttl: 600
+      type: master
+      reverse: False
+      db_name: "db.{{domain_name_2}}"
+      # key: "{{domain_name_2}}.key"
+      records:
+        NS:
+          - name: "@"
+            inet_class: IN
+            record: "ns1.{{domain_name_2}}"
+        MX:
+          - name: "@"
+            inet_class: IN
+            record: "10 mail.{{domain_name_2}}"
+        A:
+          - name: ""
+            inet_class: IN
+            record: "{{public_ip_addr}}"
+        CNAME:
+          - name: plex
+            inet_class: IN
+            record: "@"
+          - name: netdata
+            inet_class: IN
+            record: "@"
+          - name: www
+            inet_class: IN
+            record: ""
+        
+  
+    # zone:
+    #   name: 0.168.192.in-addr.arpa
+    #   type: master
+    #   reverse: True
+    #   db_name: "db.{{domain_name_1}}.inv"
+      
+  

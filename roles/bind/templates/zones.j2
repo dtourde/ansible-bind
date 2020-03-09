@@ -1,0 +1,17 @@
+#jinja2: lstrip_blocks: "True", trim_blocks: "True"
+{% for zone in zones %}
+zone "{{zone.name}}" {
+        type {{zone.type}};
+        file "conf.d/{{zone.name}}";
+        allow-transfer { {% if zone.allow_transfer is defined -%}
+                           {%- for domain in zone.allow_transfer -%}
+                          {{ domain }}; {# must be oneline #}
+                           {%- endfor -%}
+                         {%- else -%}
+                          "none";
+                         {%- endif -%} };
+        allow-query {
+                0/0;
+        };
+};
+{% endfor %}

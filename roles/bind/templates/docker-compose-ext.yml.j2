@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  bind_ext:
+    container_name: bind_ext
+    hostname: bind_ext
+    image: dto/bind9:latest
+    volumes:
+      - {{remote_bind_data_folder}}:/data/
+      - {{remote_bind_cache_folder}}:/var/cache/bind
+
+    networks:
+      front:
+        ipv4_address: {{bind_container_ip_addr}}
+  
+  
+### Networks definitions
+  
+networks:
+  front:
+    external:
+      name: "{{docker_vlan10_network}}"

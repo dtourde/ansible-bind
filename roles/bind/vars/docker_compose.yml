@@ -1,0 +1,14 @@
+---
+# This file is imported BEFORE e_bind_vars_file & secret_vars, so any of these vars will be
+# overwritten if present in the specific vars file or the secret vars file
+
+## REMOTE PATHS ##
+docker_compose_bind_folder_path:
+
+## NETWORKING ##
+# I work with bridged network in docker, with new IP for each container, this is the existing
+# network in my docker-compose.yml file
+
+# The docker_vlan10_network variable is set on my host file
+
+bind_container_ip_addr:

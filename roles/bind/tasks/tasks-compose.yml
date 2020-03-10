@@ -5,7 +5,7 @@
     state: directory
     mode: 0750
   with_items:
-    - "{{docker_compose_nginx_folder_path}}"
+    - "{{docker_compose_bind_folder_path}}"
 
 - name: Template docker-compose file
   template:

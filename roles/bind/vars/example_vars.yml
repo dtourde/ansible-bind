@@ -1,11 +1,11 @@
 ---
   ## REMOTE PATHS ##
   remote_bind_base_folder_path: /mnt/datastore0/it_services/bind
-  remote_bind_data_folder: '{{ (remote_bind_base_folder_path, "bind_ext") | join("/") }}' #base dir
+  remote_bind_data_folder: '{{remote_bind_base_folder_path ~ "/bind_ext"}}' #base dir
   
   remote_bind_etc_folder: '{{remote_bind_data_folder ~ "/etc/bind"}}' # Easier to read version, need to modify others
   
-  remote_bind_cache_folder: '{{ (remote_bind_base_folder_path, "cache_heisenberg_ext") | join("/") }}'
+  remote_bind_cache_folder: '{{remote_bind_base_folder_path ~ "/cache_heisenberg_ext" }}'
   
   remote_bind_key_file_path: '{{remote_bind_etc_folder ~ "/my-key.key"}}' # a corriger
   
@@ -16,13 +16,11 @@
   
   ## LOCAL PATHS ##
   local_bind_base_folder_path: roles/bind/files
-  local_bind_data_folder: '{{ (local_bind_base_folder_path, "bind_ext") | join("/") }}'
-  local_bind_etc_folder: '{{ (local_bind_base_folder_path, "etc") | join("/") }}'
+  local_bind_data_folder: '{{ local_bind_base_folder_path ~ "/bind_ext" }}'
+  local_bind_etc_folder: '{{ local_bind_base_folder_path ~ "/etc" }}'
   
   local_bind_key_file_path:
-  
-  # local_bind_int_data_folder: '{{ (local_bind_base_folder_path, "bind_int") | join("/") }}'
-  
+    
   ## NETWORKING ##
   bind_container_ip_addr: 1.2.3.4
   
@@ -72,7 +70,6 @@
       type: master
       reverse: False
       db_name: "db.{{domain_name_1}}"
-      # key: "{{domain_name_1}}.key"
       records:
         NS:
           - name: "@"
@@ -111,7 +108,6 @@
       type: master
       reverse: False
       db_name: "db.{{domain_name_2}}"
-      # key: "{{domain_name_2}}.key"
       records:
         NS:
           - name: "@"

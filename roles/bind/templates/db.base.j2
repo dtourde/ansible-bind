@@ -11,18 +11,19 @@ $TTL    3600
                           {{item.soa_parameters.neg_cache_ttl}} )         ; Negative Cache TTL [1h]
 ;
 {% endblock %}
-@       IN      NS      sid.example.com.
-@       IN      MX      10 sid.example.com.
 
 {% block google_anti_spoof %}
-@		IN	TXT	"v=spf1 include:_spf.google.com ip4:{{item.dns_ipv4}}/32 ptr:{{item.dns_fqdn}} ~all"
-@		IN	SPF	"v=spf1 include:_spf.google.com ip4:{{item.dns_ipv4}}/32 ptr:{{item.dns_fqdn}} ~all"
+@        IN    	   TXT        "v=spf1 include:_spf.google.com ip4:{{item.dns_ipv4}}/32 ptr:{{item.dns_fqdn}} ~all"
+@        IN	       SPF        "v=spf1 include:_spf.google.com ip4:{{item.dns_ipv4}}/32 ptr:{{item.dns_fqdn}} ~all"
 {% endblock %}
 
 {% block records %}
+{# Add record for dns #}
+{{ '{:8} {:8} {:8} {:16}'.format(item.dns_fqdn, "IN", "A", item.dns_ipv4) }}
+
 {% for key, type_record in item.records.items() %}
   {% for record in type_record %}
-{{ '{:8}{:8}{:8}{:16}'.format(record.name, record.inet_class, key, record.record) }}
+{{ '{:8} {:8} {:8} {:16}'.format(record.name, record.inet_class, key, record.record) }}
   {% endfor %}
 
 {% endfor %}

@@ -8,7 +8,8 @@
   include_vars: "{{item}}"
   tags: always
   loop:
-    - "vars/{{e_bind_vars_file}}"
+    - "vars/vars-{{ansible_os_family}}.yml"
+    - "vars/{{e_bind_vars_file}}.yml"
     - "vars/secret_vars.yml"
 
 - name: Get public IP
@@ -24,7 +25,7 @@
   include_tasks: "tasks/install-{{ansible_os_family}}-docker.yml"
   when: e_use_docker_compose | bool
 
-- name: Directories exist
+- name: Directories used in role exist
   file:
     path: "{{item}}"
     state: directory
@@ -32,14 +33,28 @@
   with_items:
     - "{{remote_bind_data_folder}}"
     - "{{remote_bind_cache_folder}}"
-    - "{{remote_bind_data_folder}}/conf.d"
+    - "{{remote_bind_etc_folder}}/conf.d"
+
+- name: User used in role exists
+  user:
+    name: "{{bind_user}}"
+    state: present
+    shell: /bin/false
+  when: not bind_user == "root"
+
+- name: Group used in role exists
+  group:
+    name: "{{bind_group}}"
+    state: present
+    system: yes #gid < 1000
+  when: not bind_group == "root"
 
 - name: Push bind default config
   copy:
-    src: "{{local_bind_etc_folder}}"
+    src: "{{local_bind_etc_folder}}/"
     dest: "{{remote_bind_etc_folder}}"
-    owner: root
-    group: bind
+    owner: "{{bind_user}}"
+    group: "{{bind_group}}"
     mode: 0640
   notify: restart bind
   tags:
@@ -48,7 +63,7 @@
 - name: Copy key file and set it as not world-readable
   copy:
     src: "{{local_bind_key_file_path}}"
-    dest: "{{remote_bind_data_folder}}"
+    dest: "{{remote_bind_key_file_path}}"
     mode: 0440
     owner: root
     group: bind
@@ -64,7 +79,7 @@
     - { src: 'named.conf.default-zones.j2', dest: '{{remote_bind_etc_folder}}/named.conf.default-zones' }
     - { src: 'named.conf.options.j2', dest: '{{remote_bind_etc_folder}}/named.conf.options' }
     - { src: 'named.conf.local.j2', dest: '{{remote_bind_etc_folder}}/named.conf.local' }
-    - { src: 'zones.j2', dest: '{{remote_bind_etc_folder}}/conf.d/' }
+    - { src: 'zones.j2', dest: '{{remote_bind_etc_folder}}/conf.d/zones' }
   tags:
     - templating_dbg_1
   notify: restart bind
@@ -72,7 +87,7 @@
 - name: Templating db files
   template:
     src: db.base.j2
-    dest: "{{remote_bind_db_folder}}/db.{{item.name}}"
+    dest: "{{remote_bind_db_folder}}/{{item.name}}"
   loop:
     "{{ zones|flatten(levels=1) }}"
   tags:

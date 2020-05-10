@@ -32,4 +32,35 @@ options {
 
         // Ne pas rendre publique la version de BIND
         version none;
+
+};
+
+
+{% if domains_acl %}
+// Gérer les acls
+acl internals { 127.0.0.0/8; 192.168.0.0/24; };
+  {% for acl in domains_acl %}
+acl {{acl.name}} {
+    {% for ip in acl.ipv4 %}
+        {{ip}};
+    {% endfor %}
+};
+
+  {% endfor %}
+{% endif %}
+
+
+logging {
+{% for log in logs %}
+        channel {{log.name}}_file {
+                file "/var/log/named/{{log.name}}.log" versions 3 size {{log.size}};
+                severity {{log.severity}};
+                print-time {{log.print_time}};
+        };
+{% endfor %}
+
+{% for log in logs %}
+        category {{log.name}} { {{log.name}}_file; };
+{% endfor %}
+
 };

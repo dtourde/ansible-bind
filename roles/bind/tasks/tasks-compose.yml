@@ -1,5 +1,5 @@
 ---
-- name: Directorie exists
+- name: Directory exists
   file:
     path: "{{item}}"
     state: directory

@@ -12,24 +12,12 @@ include "/etc/bind/named.conf.options";
 include "/etc/bind/named.conf.local";
 include "/etc/bind/named.conf.default-zones";
 
-
-{% if domains_acl %}
-// Gérer les acls
-acl internals { 127.0.0.0/8; 192.168.0.0/24; };
-  {% for acl in domains_acl %}
-acl {{acl.name}} {
-    {% for ip in acl.ipv4 %}
-        {{ip}};
-    {% endfor %}
-  {% endfor %}
-}
-{% endif %}
-
 {% if local_bind_key_file_path and local_bind_key_file_path|length and remote_bind_key_file_path and remote_bind_key_file_path|length %}
 // Déclaration de la clef TSIG utilisée pour la mise à jour dynamique
-include "{{local_bind_key_file_path}}";
+include "{{config_bind_key_file_path}}";
 {% endif %}
 
+{#
 // Configurer le canal de communication pour administrer BIND9 avec rndc
 // Par défaut, la clef est située dans le fichier rndc.key et utilisée par
 // rndc et bind9 sur localhost
@@ -42,4 +30,5 @@ zone "." {
         type hint;
         file "/etc/bind/db.root";
 };
+#}
 

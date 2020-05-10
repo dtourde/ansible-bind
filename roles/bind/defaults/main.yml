@@ -1,0 +1,71 @@
+---
+## LOGGING CONF ##
+logs:
+  - name: default
+    size: &log_size "5m"
+    severity: &log_severity "dynamic"
+    print_time: &print_time "yes"
+  - name: general
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: database
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: security
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: config
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: resolver
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: xfer-in
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: xfer-out
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: notify
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: client
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: unmatched
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: queries
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: network
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: update
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: dispatch
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: dnssec
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time
+  - name: lame-servers
+    size: *log_size
+    severity: *log_severity
+    print_time: *print_time

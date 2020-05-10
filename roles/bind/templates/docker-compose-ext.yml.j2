@@ -6,8 +6,8 @@ services:
     hostname: bind_ext
     image: dto/bind9:latest
     volumes:
-      - {{remote_bind_data_folder}}:/data/
-      - {{remote_bind_cache_folder}}:/var/cache/bind
+      - {{remote_bind_etc_folder}}:/etc/bind:rw
+      - {{remote_bind_cache_folder}}:/var/cache/bind:rw
 
     networks:
       front:
